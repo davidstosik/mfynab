@@ -32,25 +32,38 @@ The script currently looks for credentials in environment variables:
 - `MONEYFORWARD_PASSWORD`
 - `YNAB_ACCESS_TOKEN`
 
-You can for example use [envchain](https://github.com/sorah/envchain) to manage
-those credentials:
+You can for example use [dotenv](https://github.com/bkeepers/dotenv)
+to store your secrets in a `.env` file:
 
-```sh
-envchain --set --noecho mfynab_david MONEYFORWARD_USERNAME MONEYFORWARD_PASSWORD YNAB_ACCESS_TOKEN
+```
+MONEYFORWARD_USERNAME=david@example.com
+MONEYFORWARD_PASSWORD=Passw0rd!
+YNAB_ACCESS_TOKEN=abunchofcharacters
+```
+
+In addition you can use something like [1Password's CLI](https://developer.1password.com/docs/cli/)
+to avoid storing clear secrets:
+
+```
+OP_COMMAND="op --account={1Password account id} item get --format=json --vault=Private"
+MONEYFORWARD_USERNAME=$(eval $OP_COMMAND --fields=username Moneyforward | jq -r .value)
+MONEYFORWARD_PASSWORD=$(eval $OP_COMMAND --fields=password Moneyforward | jq -r .value)
+YNAB_ACCESS_TOKEN=    $(eval $OP_COMMAND --fields="'API token'" YNAB    | jq -r .value)
 ```
 
 ## Running
 
 To run, you'll simply need to set the environment variables.
-Using `envchain`, that'll look like this:
+Using `dotenv`, that'll look like this:
 
 ```sh
-envchain mfynab_david mfynab mfynab-david.yml
+dotenv mfynab_david mfynab mfynab-david.yml
 ```
 
 ## Development
 
-After checking out the repo, run `bundle install` to install dependencies. Then, run `bin/rake test` to run the tests.
+After checking out the repo, run `bundle install` to install dependencies.
+Then, run `bin/rake test` to run the tests.
 
 ## Todo
 
@@ -62,7 +75,7 @@ After checking out the repo, run `bundle install` to install dependencies. Then,
   - Save/update session_id so browser is only needed once.
 - Generate new configuration file with the command line.
 - Make reusable fixtures instead of setting up every test
-- Get rid of `envchain`?
+- Improve secrets handling:
   - Store config/credentials in `~/.config/`?
   - Encrypt config, use Keyring or other OS-level secure storage?
     - Possible to write a gem with native extension based on <https://github.com/hrantzsch/keychain>? (or <https://github.com/hwchen/keyring-rs>?)
