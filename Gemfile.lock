@@ -5,7 +5,7 @@ PATH
       csv
       ferrum (~> 0.15)
       psych
-      ynab (~> 3.4)
+      ynab (~> 3.6)
 
 GEM
   remote: https://rubygems.org/
