@@ -57,7 +57,7 @@ To run, you'll simply need to set the environment variables.
 Using `dotenv`, that'll look like this:
 
 ```sh
-dotenv mfynab_david mfynab mfynab-david.yml
+dotenv mfynab mfynab-david.yml
 ```
 
 ## Development
