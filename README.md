@@ -41,23 +41,29 @@ MONEYFORWARD_PASSWORD=Passw0rd!
 YNAB_ACCESS_TOKEN=abunchofcharacters
 ```
 
-In addition you can use something like [1Password's CLI](https://developer.1password.com/docs/cli/)
+Alternatively, you can also use something [1Password's CLI](https://developer.1password.com/docs/cli/)
 to avoid storing clear secrets:
 
 ```
-OP_COMMAND="op --account={1Password account id} item get --format=json --vault=Private"
-MONEYFORWARD_USERNAME=$(eval $OP_COMMAND --fields=username Moneyforward | jq -r .value)
-MONEYFORWARD_PASSWORD=$(eval $OP_COMMAND --fields=password Moneyforward | jq -r .value)
-YNAB_ACCESS_TOKEN=    $(eval $OP_COMMAND --fields="'API token'" YNAB    | jq -r .value)
+MONEYFORWARD_USERNAME=op://Private/Moneyforward/username
+MONEYFORWARD_PASSWORD=op://Private/Moneyforward/password
+YNAB_ACCESS_TOKEN=op://Private/YNAB/secrets/API token
 ```
 
 ## Running
 
 To run, you'll simply need to set the environment variables.
+
 Using `dotenv`, that'll look like this:
 
 ```sh
 dotenv mfynab mfynab-david.yml
+```
+
+Using 1Password's CLI, that would look like this:
+
+```sh
+op run --env-file=.env -- mfynab mfynab-david.yml
 ```
 
 ## Development
