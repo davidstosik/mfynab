@@ -23,7 +23,7 @@ module MFYNAB
     end
 
     def to_s(encoding: Encoding::UTF_8)
-      CSV.generate(**csv_options.merge(encoding: encoding)) do |csv|
+      CSV.generate(**csv_options, encoding: encoding) do |csv|
         transactions.each { csv << _1 }
       end
     end
