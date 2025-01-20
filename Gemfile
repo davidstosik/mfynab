@@ -5,7 +5,7 @@ source "https://rubygems.org"
 gemspec
 
 # Dev dependencies
-gem "debug", "~> 1.9"
+gem "debug", "~> 1.10"
 gem "minitest", "~> 5.24"
 gem "rackup", "~> 2.1"
 gem "rake", "~> 13.2"
