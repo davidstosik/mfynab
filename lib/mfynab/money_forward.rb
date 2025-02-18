@@ -19,14 +19,17 @@ module MFYNAB
     def get_session_id(username:, password:)
       with_ferrum do |browser|
         browser.goto("#{base_url}#{SIGNIN_PATH}")
-        browser.at_css("input[name='mfid_user[email]']").focus.type(username)
-        browser.at_css("input[name='mfid_user[password]']").focus.type(password)
-        browser.at_css("button#submitto").click
+        browser.at_css("input[type='email']").focus.type(username)
+        browser.at_css("input[type='password']").focus.type(password, :Enter)
 
-        # FIXME: use custom error class
-        raise "Login failed" unless browser.cookies[SESSION_COOKIE_NAME]
+        wait(5) do
+          browser.body.include?("ログアウト")
+        end
 
         browser.cookies[SESSION_COOKIE_NAME].value
+      rescue Timeout::Error
+        # FIXME: use custom error class
+        raise "Login failed"
       end
     end
 
@@ -71,6 +74,16 @@ module MFYNAB
     private
 
       attr_reader :base_url, :logger
+
+      def wait(time)
+        Timeout.timeout(time) do
+          loop do
+            return if yield
+
+            sleep 0.1
+          end
+        end
+      end
 
       def with_ferrum
         browser = Ferrum::Browser.new(timeout: 30, headless: !ENV.key?("NO_HEADLESS"))

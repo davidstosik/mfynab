@@ -29,7 +29,7 @@ module MFYNAB
 
     get "/" do
       if request.cookies["_moneybook_session"] == "dummy_session_id"
-        "Logged in"
+        "Logged in (ログアウト)"
       else
         "Not logged in"
       end
