@@ -8,8 +8,6 @@ module MFYNAB
     SIGNIN_PATH = "/sign_in"
     CSV_PATH = "/cf/csv"
     SESSION_COOKIE_NAME = "_moneybook_session"
-    USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " \
-                 "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
 
     def initialize(logger:, base_url: DEFAULT_BASE_URL)
       @base_url = URI(base_url)
@@ -57,10 +55,7 @@ module MFYNAB
 
         request = Net::HTTP::Get.new(
           "#{CSV_PATH}?from=#{date.strftime('%Y/%m/%d')}",
-          {
-            "Cookie" => "#{SESSION_COOKIE_NAME}=#{session_id}",
-            "User-Agent" => USER_AGENT,
-          },
+          "Cookie" => "#{SESSION_COOKIE_NAME}=#{session_id}",
         )
 
         result = http.request(request)
@@ -87,9 +82,10 @@ module MFYNAB
 
       def with_ferrum
         browser = Ferrum::Browser.new(timeout: 30, headless: !ENV.key?("NO_HEADLESS"))
+        user_agent = browser.default_user_agent.sub("HeadlessChrome", "Chrome")
         browser.headers.add({
           "Accept-Language" => "en-US,en",
-          "User-Agent" => USER_AGENT,
+          "User-Agent" => user_agent,
         })
         yield browser
       rescue StandardError
