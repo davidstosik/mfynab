@@ -18,6 +18,11 @@ class CLI
     logger.info("Running...")
 
     Dir.mktmpdir("mfynab") do |save_path|
+      money_forward.update_accounts(
+        session_id: session_id,
+        account_names: config["accounts"].map { _1["money_forward_name"] },
+      )
+
       money_forward.download_csv(
         session_id: session_id,
         path: save_path,
