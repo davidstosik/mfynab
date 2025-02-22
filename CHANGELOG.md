@@ -2,6 +2,8 @@
 
 ## (unreleased)
 
+- (Fix) Handle scenario where multiple YNAB accounts may match the partial string passed in the config file.
+  ([TBD]())
 - Increase memo and payee max lengths, following changes in YNAB's API
   ([243b60b](243b60b90efe2e70e50156d1a9cc4330f81cb563))
 

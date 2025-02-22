@@ -119,12 +119,17 @@ module MFYNAB
 
         ynab_account_name = matching_mapping["ynab_name"]
 
-        ynab_account = accounts.find do |account|
+        ynab_accounts = accounts.select do |account|
           account.name.include?(ynab_account_name)
         end
-        raise "No YNAB account found with name #{ynab_account_name}." unless ynab_account
 
-        ynab_account
+        if ynab_accounts.empty?
+          raise "No YNAB account found with name #{ynab_account_name}."
+        elsif ynab_accounts.size > 1
+          raise "Found multiple YNAB accounts matching name #{ynab_account_name}."
+        end
+
+        ynab_accounts.first
       end
 
       def ynab_transactions_api
