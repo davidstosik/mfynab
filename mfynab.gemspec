@@ -29,6 +29,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "csv"
   spec.add_dependency "ferrum", "~> 0.15"
+  spec.add_dependency "nokogiri", "~> 1.18"
   spec.add_dependency "psych"
   spec.add_dependency "ynab", "~> 3.6"
 end

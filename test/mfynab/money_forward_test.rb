@@ -4,10 +4,13 @@ require "test_helper"
 require "csv"
 require "mfynab/money_forward"
 require "support/fake_money_forward_app"
+require "support/test_loggers"
 require "support/money_forward_csv"
 
 module MFYNAB
   class MoneyForwardTest < Minitest::Test
+    include TestLoggers
+
     def test_get_session_id_raises_if_wrong_credentials
       while_running_fake_money_forward_app do |host, port|
         money_forward = MoneyForward.new(
@@ -123,10 +126,6 @@ module MFYNAB
         res.is_a?(Net::HTTPSuccess)
       rescue SystemCallError, Net::ReadTimeout, OpenSSL::SSL::SSLError
         false
-      end
-
-      def null_logger
-        Logger.new(File::NULL)
       end
   end
 end

@@ -5,6 +5,7 @@ require "mfynab/money_forward"
 require "mfynab/money_forward_data"
 require "mfynab/ynab_transaction_importer"
 
+# FIXME: namespace
 class CLI
   def self.start(argv)
     new(argv).start
@@ -18,8 +19,11 @@ class CLI
     logger.info("Running...")
 
     Dir.mktmpdir("mfynab") do |save_path|
+      money_forward.update_accounts(
+        account_names: config["accounts"].map { _1["money_forward_name"] },
+      )
+
       money_forward.download_csv(
-        session_id: session_id,
         path: save_path,
         months: months_to_sync,
       )
@@ -36,13 +40,6 @@ class CLI
 
     attr_reader :argv
 
-    def session_id
-      @_session_id ||= money_forward.get_session_id(
-        username: config["moneyforward_username"],
-        password: config["moneyforward_password"],
-      )
-    end
-
     def ynab_transaction_importer
       @_ynab_transaction_importer ||= MFYNAB::YnabTransactionImporter.new(
         config["ynab_access_token"],
@@ -57,7 +54,11 @@ class CLI
     end
 
     def money_forward
-      @_money_forward ||= MFYNAB::MoneyForward.new(logger: logger)
+      @_money_forward ||= MFYNAB::MoneyForward.new(
+        username: config["moneyforward_username"],
+        password: config["moneyforward_password"],
+        logger: logger,
+      )
     end
 
     def config_file
