@@ -3,10 +3,10 @@
 require "nokogiri"
 require "uri"
 require "mfynab/money_forward/session"
+require "mfynab/money_forward/account_status"
 
 module MFYNAB
   class MoneyForward
-    ACCOUNT_FRESHNESS_LIMIT = 24 * 60 * 60 # 1 day
     DEFAULT_BASE_URL = "https://moneyforward.com"
     CSV_PATH = "/cf/csv"
 
@@ -19,49 +19,13 @@ module MFYNAB
     end
 
     def update_accounts(account_names:)
-      logger.info("Checking Money Forward accounts status")
-      accounts = accounts_status(account_names: account_names)
+      account_statuses = AccountStatus::Fetcher.new(session, logger: logger).fetch(account_names: account_names)
 
-      # Require accounts to have been updated in the last day
-      # FIXME: make configurable?
-      time_limit = Time.now - ACCOUNT_FRESHNESS_LIMIT
+      finished = account_statuses.map do |account_status|
+        ensure_account_updated(account_status)
+      end.all?
 
-      wait_and_retry = false
-      accounts.each do |account|
-        status_log = "#{account[:name]}:\t#{account[:status]}"
-        case account[:status]
-        when :success
-          status_log << " (#{account[:updated_at]})"
-          if account[:updated_at] < time_limit
-            status_log << " - Will update"
-            update_account(id_hash: account[:id_hash])
-            wait_and_retry = true
-          end
-        when :processing
-          status_log << " - Updating"
-          wait_and_retry = true
-        else
-          # FIXME: I think I need to try and update accounts with weird state at least one,
-          # to confirm whether it's resolved.
-          status_log << " - Ignoring"
-          # FIXME: we can probably handle :additional_request and/or :login right here in the script,
-          # when we find the time.
-          # FIXME: sometimes, nothing can be done about the status, for example, I can currently see モバイルSUICA
-          # show an `errors` status with this message:
-          # ただいま大変混み合っております。今しばらくお待ちいただきますようお願いいたします。 失敗日時：02/22 14:03
-          # In other words: "please wait". Maybe improve messaging?
-          warning_message = "The Money Forward account named #{account[:name]} is in an invalid state: "
-          warning_message << "`#{account[:status]}`"
-          warning_message << " (#{account[:extra]['message']})" if account[:extra]["message"]
-          warning_message << ". Please handle the issue manually to resume syncing."
-          logger.warn(warning_message)
-        end
-
-        # FIXME: I'll probably want to refresh the display instead of relogging everything every 5 seconds.
-        logger.info(status_log)
-      end
-
-      return unless wait_and_retry
+      return if finished
 
       logger.info("Waiting for a while before checking status again...")
       # FIXME: I'm never comfortable with using sleep().
@@ -72,63 +36,6 @@ module MFYNAB
       # > When the accounts are updated, I'll proceed to the next step.
       sleep(5)
       update_accounts(account_names: account_names)
-    end
-
-    def accounts_status(account_names:)
-      # Download /accounts page
-      # Parse it with Nokogiri
-      body = session.http_get("/accounts")
-      root = Nokogiri::HTML(body)
-
-      accounts = root.css("section.accounts section.common-account-table-container > table > tr[id]").map do |node|
-        {
-          id_hash: node[:id],
-          name: node.xpath("td").first.text.lines[1].strip,
-          status: node.css("td.account-status>span:not([id*='hidden'])").text.strip,
-          # FIXME: can this be a little more robust?
-          #  - this should not depend on the timezone the server is running in
-          #  - this should explicitly fail if parsing is not possible
-          updated_at: Time.parse(node.css("td.created").text[/(?<=\().*?(?=\))/]),
-        }
-      end
-
-      accounts.select! { account_names.include?(_1[:name]) }
-
-      # FIXME: I should only care about accounts that are of interest for mfynab
-      # (the ones that have a mapping in the config file)
-      accounts.each do |account|
-        account[:status] =
-          case account[:status]
-          when "正常" then :success
-          when "更新中" then :processing
-          else
-            body = session.http_get("/accounts/polling/#{account[:id_hash]}")
-            # JSON format:
-            #  - loading: boolean
-            #  - message: Japanese text
-            #  - status: success, processing, additional_request, errors, important_announcement,
-            #            invalid_password, login, suspended
-            # FIXME: make more robust
-            queried_status = JSON.parse(body)
-            account[:extra] = queried_status
-            queried_status["status"].to_sym
-          end
-      end
-
-      accounts
-    end
-
-    def update_account(id_hash:)
-      session.http_post(
-        "/faggregation_queue2/#{id_hash}",
-        URI.encode_www_form(commit: "更新"),
-        "X-CSRF-Token" => csrf_token,
-      )
-    end
-
-    def csrf_token
-      body = session.http_get("/accounts")
-      Nokogiri::HTML(body).at_css("meta[name='csrf-token']")[:content]
     end
 
     def download_csv(path:, months:)
@@ -161,5 +68,40 @@ module MFYNAB
     private
 
       attr_reader :username, :password, :logger, :base_url, :session
+
+      def ensure_account_updated(account_status)
+        updated = false
+
+        status_log = "#{account_status.name}:\t#{account_status.key}"
+        case account_status.key
+        when :success
+          status_log << " (#{account_status.updated_at})"
+          if account_status.outdated?
+            status_log << " - Will update"
+            account_status.trigger_update(session)
+          else
+            updated = true
+          end
+        when :processing
+          status_log << " - Updating"
+        else
+          # FIXME: I think I need to try and update accounts with weird state at least once,
+          # to confirm whether it's resolved.
+          status_log << " - Ignoring"
+          # FIXME: we can probably handle :additional_request and/or :login right here in the script,
+          # when we find the time.
+          # FIXME: sometimes, nothing can be done about the status, for example, I can currently see モバイルSUICA
+          # show an `errors` status with this message:
+          # ただいま大変混み合っております。今しばらくお待ちいただきますようお願いいたします。 失敗日時：02/22 14:03
+          # In other words: "please wait". Maybe improve messaging?
+          updated = true # There's nothing to wait on here.
+          logger.warn(account_status.invalid_state_warning)
+        end
+
+        # FIXME: I'll probably want to refresh the display instead of relogging everything every 5 seconds.
+        logger.info(status_log)
+
+        updated
+      end
   end
 end

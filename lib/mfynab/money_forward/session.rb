@@ -59,6 +59,7 @@ module MFYNAB
       end
 
       def login
+        logger.info("Logging in to Money Forward...")
         with_ferrum do |browser|
           browser.goto("#{base_url}#{SIGNIN_PATH}")
           browser.at_css("input[type='email']").focus.type(username)
@@ -72,6 +73,13 @@ module MFYNAB
           # FIXME: use custom error class
           raise "Login failed"
         end
+      end
+
+      # FIXME: not sure a CSRF token is generic to the session
+      # Maybe it has different instances depending on the page it's on?
+      def csrf_token
+        @_csrf_token ||= Nokogiri::HTML(http_get("/accounts"))
+          .at_css("meta[name='csrf-token']")[:content]
       end
 
       private
