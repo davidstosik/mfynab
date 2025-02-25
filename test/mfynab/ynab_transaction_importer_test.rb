@@ -2,10 +2,12 @@
 
 require "test_helper"
 require "mfynab/ynab_transaction_importer"
+require "support/test_loggers"
 require "support/ynab_requests"
 
 module MFYNAB
   class YnabTransactionImporterTest < Minitest::Test
+    include TestLoggers
     include YnabRequests
 
     def test_with_no_transactions
@@ -117,11 +119,5 @@ module MFYNAB
 
       assert_requested(expected_transactions_request)
     end
-
-    private
-
-      def null_logger
-        Logger.new(File::NULL)
-      end
   end
 end
