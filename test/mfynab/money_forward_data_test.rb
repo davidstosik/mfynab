@@ -2,9 +2,12 @@
 
 require "test_helper"
 require "mfynab/money_forward_data"
+require "support/test_loggers"
 
 module MFYNAB
   class MoneyForwardDataTest < Minitest::Test
+    include TestLoggers
+
     def test_read_all_csv_reads_all_csv_in_directory_and_groups_by_account
       csv1 = MoneyForwardCsv.new(
         Date.new(2024, 7, 1),
@@ -86,11 +89,5 @@ module MFYNAB
         assert_equal expected_transactions, data.to_h
       end
     end
-
-    private
-
-      def null_logger
-        Logger.new(File::NULL)
-      end
   end
 end
