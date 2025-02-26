@@ -1,11 +1,16 @@
 # CHANGELOG.md
 
+**FIXME:**
+- git SHA links are broken
+- SHAs in _unreleased_ sometimes link to an outdated commit
+- should I just remove SHA links completely?
+
 ## (unreleased)
 
 - (Fix) Handle scenario where multiple YNAB accounts may match the partial string passed in the config file.
   ([TBD]())
 - Increase memo and payee max lengths, following changes in YNAB's API
-  ([243b60b](243b60b90efe2e70e50156d1a9cc4330f81cb563))
+  ([TBD]())
 
 ## 0.1.4 (2024-08-25)
 

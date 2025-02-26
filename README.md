@@ -121,3 +121,4 @@ I could for example use Kamal to produce a Docker image that includes all needed
   Importing 21 transactions for DDD
   Imported 24 transactions for DDD (0 duplicates)
   ```
+- Passing logger everywhere feels weird.
