@@ -12,11 +12,11 @@ module MFYNAB
       @logger = logger
     end
 
-    def update_accounts(account_names)
+    def update_accounts(account_names, update_invalid: true)
       account_statuses = AccountStatus::Fetcher.new(session, logger: logger).fetch(account_names: account_names)
 
       finished = account_statuses.map do |account_status|
-        ensure_account_updated(account_status)
+        ensure_account_updated(account_status, update_invalid: update_invalid)
       end.all?
 
       return if finished
@@ -29,7 +29,7 @@ module MFYNAB
       # > I triggered the updates, and will call myself again in X seconds/minutes.
       # > When the accounts are updated, I'll proceed to the next step.
       sleep(5)
-      update_accounts(account_names)
+      update_accounts(account_names, update_invalid: false)
     end
 
     def download_csv(path:, months:)
@@ -63,37 +63,32 @@ module MFYNAB
 
       attr_reader :session, :logger
 
-      def ensure_account_updated(account_status)
-        updated = false
-
-        status_log = "#{account_status.name}:\t#{account_status.key}"
-        case account_status.key
-        when :success
-          status_log << " (#{account_status.updated_at})"
-          if account_status.outdated?
-            status_log << " - Will update"
-            account_status.trigger_update(session)
-          else
-            updated = true
-          end
-        when :processing
-          status_log << " - Updating"
+      def ensure_account_updated(account_status, update_invalid:)
+        if account_status.should_update?(update_invalid: update_invalid)
+          suffix = "Will update"
+          account_status.trigger_update(session)
+          updated = false
+        elsif account_status.key == :processing
+          suffix = "Updating"
+          updated = false
+        elsif account_status.key == :success
+          suffix = "Up to date"
+          updated = true
         else
-          # FIXME: I think I need to try and update accounts with weird state at least once,
-          # to confirm whether it's resolved.
-          status_log << " - Ignoring"
           # FIXME: we can probably handle :additional_request and/or :login right here in the script,
-          # when we find the time.
+          # if we can find the time.
           # FIXME: sometimes, nothing can be done about the status, for example, I can currently see モバイルSUICA
           # show an `errors` status with this message:
           # ただいま大変混み合っております。今しばらくお待ちいただきますようお願いいたします。 失敗日時：02/22 14:03
           # In other words: "please wait". Maybe improve messaging?
-          updated = true # There's nothing to wait on here.
+          suffix = "Ignoring"
+          updated = true
           logger.warn(account_status.invalid_state_warning)
         end
 
         # FIXME: I'll probably want to refresh the display instead of relogging everything every 5 seconds.
-        logger.info(status_log)
+        # FIXME: would be nice to tabulate the info better, for readability.
+        logger.info("#{account_status.name}:\t#{account_status.key} (#{account_status.updated_at}) - #{suffix}")
 
         updated
       end

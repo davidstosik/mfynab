@@ -95,6 +95,15 @@ module MFYNAB
         updated_at < Time.now - FRESHNESS_LIMIT
       end
 
+      def should_update?(update_invalid:)
+        (key == :success && outdated?) ||
+          (update_invalid && failed_state?)
+      end
+
+      def failed_state?
+        !%i[success processing].include?(key)
+      end
+
       def trigger_update(session)
         session.http_post(
           "/faggregation_queue2/#{id_hash}",
