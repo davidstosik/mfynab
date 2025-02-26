@@ -35,25 +35,44 @@ module MFYNAB
       end
 
       def http_get(path, params = {})
-        # FIXME: switch to Faraday or another advanced HTTP library?
-        # (Better error handling, response parsing, cookies, possibly keep the connection open, etc.)
-        Net::HTTP.start(base_url.host, use_ssl: true) do |http|
-          path = URI.join(base_url, path)
-          path.query = URI.encode_www_form(params) unless params.empty?
+        path = URI.join(base_url, path)
+        path.query = URI.encode_www_form(params) unless params.empty?
+        request = Net::HTTP::Get.new(path, "Cookie" => "#{COOKIE_NAME}=#{cookie.value}")
+        http_request(request)
+      end
 
-          request = Net::HTTP::Get.new(path, "Cookie" => "#{COOKIE_NAME}=#{cookie.value}")
+      def http_post(path, body, headers = {})
+        request = Net::HTTP::Post.new(
+          path,
+          "Cookie" => "#{COOKIE_NAME}=#{cookie.value}",
+          **headers,
+        )
+        request.body = body
+        http_request(request)
+      end
 
-          result = http.request(request)
-          raise "Got unexpected result: #{result.inspect}" unless result.is_a?(Net::HTTPSuccess)
-
-          result.body
-        end
+      # FIXME: not sure a CSRF token is generic to the session
+      # Maybe it has different instances depending on the page it's on?
+      def csrf_token
+        @_csrf_token ||= Nokogiri::HTML(http_get("/accounts"))
+          .at_css("meta[name='csrf-token']")[:content]
       end
 
       private
 
         attr_reader :username, :password, :logger, :base_url
         attr_writer :cookie
+
+        def http_request(request)
+          # FIXME: switch to Faraday or another advanced HTTP library?
+          # (Better error handling, response parsing, cookies, possibly keep the connection open, etc.)
+          Net::HTTP.start(base_url.host, use_ssl: true) do |http|
+            result = http.request(request)
+            raise "Got unexpected result: #{result.inspect}" unless result.is_a?(Net::HTTPSuccess)
+
+            result.body
+          end
+        end
 
         def with_ferrum
           browser = Ferrum::Browser.new(timeout: 30, headless: !ENV.key?("NO_HEADLESS"))
