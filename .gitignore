@@ -1,3 +1,4 @@
 /config/*
 /screenshot.png
 /pkg/
+.ruby-version
