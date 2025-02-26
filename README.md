@@ -73,13 +73,10 @@ Then, run `bin/rake test` to run the tests.
 
 ## Roadmap
 
-### Refresh bank accounts in Money Forward
+### Deploy/Automate
 
-Using the browser, log in, then press the 更新 button for each account declared in the config file.
-
-Tricky parts:
-- Refreshing can take some time, so we should also implement a way to check progess. (Does it show 更新中 and a loading spinner for that account?)
-- Sometimes, Money Forward needs to fill a captcha or one-time password. How can I pass that to mfynab and have it fill it?
+I'd like to be able to deploy something to a server, that would run the sync on a schedule (eg. every hour or day).
+I could for example use Kamal to produce a Docker image that includes all needed secrets and will run a script on a schedule.
 
 ### Better session management
 
@@ -91,11 +88,6 @@ Previous notes:
   - Or prompt user from credentials in terminal and fill in form in headless browser
   - Need to handle case when cookie has expired:
     > セキュリティ設定	最終利用時間から[30日]後に自動ログアウト
-
-### Deploy/Automate
-
-I'd like to be able to deploy something to a server, that would run the sync on a schedule (eg. every hour or day).
-I could for example use Kamal to produce a Docker image that includes all needed secrets and will run a script on a schedule.
 
 ### Later
 
@@ -122,3 +114,4 @@ I could for example use Kamal to produce a Docker image that includes all needed
   Imported 24 transactions for DDD (0 duplicates)
   ```
 - Passing logger everywhere feels weird.
+- Prompt user for captcha and other account extra authentication required by Money Forward?
