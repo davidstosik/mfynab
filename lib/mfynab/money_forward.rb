@@ -1,37 +1,15 @@
 # frozen_string_literal: true
 
-require "ferrum"
-
 module MFYNAB
   class MoneyForward
-    DEFAULT_BASE_URL = "https://moneyforward.com"
-    SIGNIN_PATH = "/sign_in"
     CSV_PATH = "/cf/csv"
-    SESSION_COOKIE_NAME = "_moneybook_session"
 
-    def initialize(logger:, base_url: DEFAULT_BASE_URL)
-      @base_url = URI(base_url)
+    def initialize(session, logger:)
+      @session = session
       @logger = logger
     end
 
-    def get_session_id(username:, password:)
-      with_ferrum do |browser|
-        browser.goto("#{base_url}#{SIGNIN_PATH}")
-        browser.at_css("input[type='email']").focus.type(username)
-        browser.at_css("input[type='password']").focus.type(password, :Enter)
-
-        wait(5) do
-          browser.body.include?("ログアウト")
-        end
-
-        browser.cookies[SESSION_COOKIE_NAME].value
-      rescue Timeout::Error
-        # FIXME: use custom error class
-        raise "Login failed"
-      end
-    end
-
-    def download_csv(session_id:, path:, months:)
+    def download_csv(path:, months:)
       month = Date.today
       month -= month.day - 1 # First day of month
       months.times do
@@ -42,58 +20,23 @@ module MFYNAB
         # FIXME: I don't really need to save the CSV files to disk anymore.
         # Maybe just return parsed CSV data?
         File.open(File.join(path, "#{date_string}.csv"), "wb") do |file|
-          file << download_csv_string(date: month, session_id: session_id)
+          file << download_csv_string(date: month)
         end
 
         month = month.prev_month
       end
     end
 
-    def download_csv_string(date:, session_id:)
-      Net::HTTP.start(base_url.host, use_ssl: true) do |http|
-        http.response_body_encoding = Encoding::SJIS
-
-        request = Net::HTTP::Get.new(
-          "#{CSV_PATH}?from=#{date.strftime('%Y/%m/%d')}",
-          "Cookie" => "#{SESSION_COOKIE_NAME}=#{session_id}",
-        )
-
-        result = http.request(request)
-        raise "Got unexpected result: #{result.inspect}" unless result.is_a?(Net::HTTPSuccess)
-        raise "Invalid encoding" unless result.body.valid_encoding?
-
-        result.body.encode(Encoding::UTF_8)
-      end
+    def download_csv_string(date:)
+      # FIXME: handle errors/edge cases
+      session
+        .http_get(CSV_PATH, from: date.strftime("%Y/%m/%d"))
+        .force_encoding(Encoding::SJIS)
+        .encode(Encoding::UTF_8)
     end
 
     private
 
-      attr_reader :base_url, :logger
-
-      def wait(time)
-        Timeout.timeout(time) do
-          loop do
-            return if yield
-
-            sleep 0.1
-          end
-        end
-      end
-
-      def with_ferrum
-        browser = Ferrum::Browser.new(timeout: 30, headless: !ENV.key?("NO_HEADLESS"))
-        user_agent = browser.default_user_agent.sub("HeadlessChrome", "Chrome")
-        browser.headers.add({
-          "Accept-Language" => "en-US,en",
-          "User-Agent" => user_agent,
-        })
-        yield browser
-      rescue StandardError
-        browser.screenshot(path: "screenshot.png")
-        logger.error("An error occurred and a screenshot was saved to ./screenshot.png")
-        raise
-      ensure
-        browser&.quit
-      end
+      attr_reader :session, :logger
   end
 end
