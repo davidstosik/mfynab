@@ -3,4 +3,4 @@
 
 require "mfynab/cli"
 
-CLI.start(ARGV)
+MFYNAB::CLI.start(ARGV)
