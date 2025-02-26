@@ -65,7 +65,7 @@ module MFYNAB
           yield browser
         rescue StandardError
           # FIXME: add datetime to path
-          browser.screenshot(path: "screenshot.png")
+          browser&.screenshot(path: "screenshot.png")
           logger.error("An error occurred and a screenshot was saved to ./screenshot.png")
           raise
         ensure
