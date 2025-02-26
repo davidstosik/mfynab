@@ -2,6 +2,7 @@
 
 require "yaml"
 require "mfynab/money_forward"
+require "mfynab/money_forward/session"
 require "mfynab/money_forward_data"
 require "mfynab/ynab_transaction_importer"
 
@@ -20,7 +21,6 @@ module MFYNAB
 
       Dir.mktmpdir("mfynab") do |save_path|
         money_forward.download_csv(
-          session_id: session_id,
           path: save_path,
           months: months_to_sync,
         )
@@ -37,13 +37,6 @@ module MFYNAB
 
       attr_reader :argv
 
-      def session_id
-        @_session_id ||= money_forward.get_session_id(
-          username: config["moneyforward_username"],
-          password: config["moneyforward_password"],
-        )
-      end
-
       def ynab_transaction_importer
         @_ynab_transaction_importer ||= YnabTransactionImporter.new(
           config["ynab_access_token"],
@@ -58,7 +51,15 @@ module MFYNAB
       end
 
       def money_forward
-        @_money_forward ||= MoneyForward.new(logger: logger)
+        @_money_forward ||= MoneyForward.new(session, logger: logger)
+      end
+
+      def session
+        @_session ||= MoneyForward::Session.new(
+          username: config["moneyforward_username"],
+          password: config["moneyforward_password"],
+          logger: logger,
+        )
       end
 
       def config_file
