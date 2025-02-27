@@ -60,6 +60,8 @@ MONEYFORWARD_PASSWORD=Passw0rd!
 YNAB_ACCESS_TOKEN=abunchofcharacters
 ```
 
+<a name="one-password-cli"></a>
+
 Alternatively, you can also use something like [1Password's CLI](https://developer.1password.com/docs/cli/)
 to completely avoid storing clear secrets:
 
@@ -89,6 +91,44 @@ op run --env-file=.env -- mfynab mfynab-david.yml
 
 After checking out the repo, run `bundle install` to install dependencies.
 Then, run `bin/rake test` to run the tests.
+
+## Running MFYNAB with cron and Docker
+
+The `docker-example/` directory contains sample files that'll help you schedule MFYNAB inside a Docker container.
+
+See the comments in each file for more details on how it works.
+
+First you'll want to bring your MFYNAB configuration file into this directory:
+
+```sh
+cp path_to/config.yml docker_example/
+```
+
+Then you can build the Docker image:
+
+```sh
+docker build -t mfynab docker_example/
+```
+
+Finally, you can run the Docker image. Note that you need to pass secrets as environment variables:
+
+```sh
+docker run -d \
+  --env YNAB_ACCESS_TOKEN=... \
+  --env MONEYFORWARD_USERNAME=... \
+  --env MONEYFORWARD_PASSWORD='...' \
+  --name mfynab mfynab
+```
+
+You can also use the 1Password CLI ([documented here](#one-password-cli)) for this step:
+
+```sh
+op run --env-file=.env -- sh -c 'docker run -d \
+  --env YNAB_ACCESS_TOKEN=$YNAB_ACCESS_TOKEN \
+  --env MONEYFORWARD_USERNAME=$MONEYFORWARD_USERNAME \
+  --env MONEYFORWARD_PASSWORD="$MONEYFORWARD_PASSWORD" \
+  --name mfynab mfynab'
+```
 
 ## Roadmap
 
@@ -135,3 +175,4 @@ Previous notes:
   ```
 - Passing logger everywhere feels weird.
 - Prompt user for captcha and other account extra authentication required by Money Forward?
+- One might want to run a single Docker instance for multiple users, but the current setup does not allow that easily. We'll want to bring the secret environment variables into the config file, making it possible to assign them to a given "user", and name them accordingly.
