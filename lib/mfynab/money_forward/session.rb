@@ -75,7 +75,13 @@ module MFYNAB
         end
 
         def with_ferrum
-          browser = Ferrum::Browser.new(timeout: 30, headless: !ENV.key?("NO_HEADLESS"))
+          browser = Ferrum::Browser.new(
+            timeout: 30,
+            headless: !ENV.key?("NO_HEADLESS"),
+            # FIXME: this was needed to be able to run Chromium headless
+            # within Docker as root, but I'd rather not rely on it.
+            browser_options: { "no-sandbox": nil },
+          )
           user_agent = browser.default_user_agent.sub("HeadlessChrome", "Chrome")
           browser.headers.add({
             "Accept-Language" => "en-US,en",
