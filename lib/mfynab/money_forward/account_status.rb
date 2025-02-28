@@ -67,7 +67,7 @@ module MFYNAB
           end
       end
 
-      FRESHNESS_LIMIT = 24 * 60 * 60 # 1 day
+      FRESHNESS_LIMIT = 60 * 60 # 1 hour
 
       attr_reader :id_hash, :name, :raw_status, :updated_at, :key, :message
 
