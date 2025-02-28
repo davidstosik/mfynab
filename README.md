@@ -156,3 +156,9 @@ Previous notes:
 - Passing logger everywhere feels weird.
 - Prompt user for captcha and other account extra authentication required by Money Forward?
 - One might want to run a single Docker instance for multiple users, but the current setup does not allow that easily. We'll want to bring the secret environment variables into the config file, making it possible to assign them to a given "user", and name them accordingly.
+
+
+
+WIP:
+Container on Kamal fails to log in because of the "Additional Authentication via Email".
+Will have to implement the "log in on deploy" to get it to work.
