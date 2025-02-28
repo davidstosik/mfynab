@@ -2,5 +2,6 @@
 
 source "https://rubygems.org"
 
+# gem "kamal", "~> 2.5"
 # FIXME: point to the latest RubyGems release
 gem "mfynab", github: "davidstosik/mfynab", branch: "sto/docker"

@@ -62,6 +62,14 @@ module MFYNAB
               #  - this should not depend on the timezone the server is running in
               #  - this should explicitly fail if parsing is not possible
               #  - what if it's January 1st and last update was last year?
+              # This is actually broken when running on a server which is in UTC.
+              # Eg:
+              #   - it is 2025/03/01 18:00 UTC+9
+              #   - in UTC, that is 2025/03/01 09:00
+              #   - some account's last update is displayed as "(03/01 10:00)"
+              #   - when parsing that date in a server that runs in UTC, we get
+              #     2025/03/01 10:00 UTC, which is in the future, whereas it should
+              #     be detected as 8 hours in the past
               updated_at: Time.parse(node.css("td.created").text[/(?<=\().*?(?=\))/]),
             )
           end
