@@ -7,6 +7,8 @@
 
 ## (unreleased)
 
+- Refresh accounts on Money Forward before syncing transactions to YNAB.
+  ([TBD]())
 - (Fix) Handle scenario where multiple YNAB accounts may match the partial string passed in the config file.
   ([TBD]())
 - Increase memo and payee max lengths, following changes in YNAB's API
