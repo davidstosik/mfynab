@@ -1,0 +1,20 @@
+David:
+  ynab_budget: "2022 💪🏻"
+  months_to_sync: 3
+  accounts:
+    - money_forward_name: "みずほ銀行"
+      ynab_name: "Mizuho Bank"
+    - money_forward_name: "楽天銀行"
+      ynab_name: "Rakuten Bank"
+    - money_forward_name: "楽天カード"
+      ynab_name: "Rakuten Card"
+    - money_forward_name: "モバイルSuica"
+      ynab_name: "SUICA"
+    - money_forward_name: "VIEW CARD"
+      ynab_name: "VIEW card"
+    - money_forward_name: "三井住友銀行"
+      ynab_name: "SMBC account"
+    - money_forward_name: "Amazon.co.jp"
+      ynab_name: "AmazonJP"
+    - money_forward_name: "Amazon Mastercard"
+      ynab_name: "SMBC credit cards"

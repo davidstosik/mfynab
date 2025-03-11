@@ -23,7 +23,9 @@ module MFYNAB
         with_ferrum do |browser|
           submit_login_form(browser)
 
-          self.cookie = browser.cookies[COOKIE_NAME]
+          self.cookie = browser.cookies[COOKIE_NAME].tap do |cookie|
+            write_cookie_cache(cookie)
+          end
         rescue Timeout::Error
           # FIXME: use custom error class
           raise "Login failed"
@@ -31,7 +33,22 @@ module MFYNAB
       end
 
       def cookie
-        @cookie || login
+        @cookie || read_cookie_cache || login
+      end
+
+      COOKIE_CACHE_PATH = File.join(Dir.home, ".config", "mfynab", "cookie")
+
+      def read_cookie_cache
+        return unless File.exist?(COOKIE_CACHE_PATH)
+
+        cookie_attributes = JSON.parse(File.read(COOKIE_CACHE_PATH))
+        self.cookie = Ferrum::Cookies::Cookie.new(cookie_attributes)
+      end
+
+      def write_cookie_cache(cookie)
+        FileUtils.mkdir_p(File.dirname(COOKIE_CACHE_PATH))
+
+        File.write(COOKIE_CACHE_PATH, JSON.dump(cookie.attributes))
       end
 
       def http_get(path, params = {})
