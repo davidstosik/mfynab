@@ -19,6 +19,8 @@ module MFYNAB
     def start
       logger.info("Running...")
 
+      money_forward.update_accounts(money_forward_account_names)
+
       Dir.mktmpdir("mfynab") do |save_path|
         money_forward.download_csv(
           path: save_path,
@@ -36,6 +38,10 @@ module MFYNAB
     private
 
       attr_reader :argv
+
+      def money_forward_account_names
+        @_money_forward_account_names = config["accounts"].map { _1["money_forward_name"] }
+      end
 
       def ynab_transaction_importer
         @_ynab_transaction_importer ||= YnabTransactionImporter.new(
