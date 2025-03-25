@@ -1,5 +1,15 @@
 ynab_budget: "My budget"
 months_to_sync: 3
+credentials:
+  ynab_access_token:
+    type: "env"
+    value: "YNAB_ACCESS_TOKEN"
+  moneyforward_username:
+    type: "env"
+    value: "MONEYFORWARD_USERNAME"
+  moneyforward_password:
+    type: "env"
+    value: "MONEYFORWARD_PASSWORD"
 accounts:
   - money_forward_name: "楽天銀行"
     ynab_name: "Rakuten Bank"

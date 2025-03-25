@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "mfynab/credentials_normalizer"
+
 module MFYNAB
   class Config
     DEFAULT_MONTHS_TO_SYNC = 3
@@ -33,6 +35,10 @@ module MFYNAB
 
     def accounts
       hash_config.fetch("accounts", [])
+    end
+
+    def credentials
+      @_credentials ||= CredentialsNormalizer.new(hash_config, logger).normalize
     end
 
     private

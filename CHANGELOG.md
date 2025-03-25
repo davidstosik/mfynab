@@ -2,6 +2,8 @@
 
 ## (unreleased)
 
+- Credentials can now be stored in the config file.
+  (This change is backwards compatible.)
 - The configuration YAML file does not need a top-level key anymore.
   (This change is backwards compatible.)
 

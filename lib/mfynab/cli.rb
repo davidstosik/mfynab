@@ -46,7 +46,7 @@ module MFYNAB
 
       def ynab_transaction_importer
         @_ynab_transaction_importer ||= YnabTransactionImporter.new(
-          secrets["ynab_access_token"],
+          config.credentials["ynab_access_token"],
           config.ynab_budget,
           config.accounts,
           logger: logger,
@@ -59,18 +59,10 @@ module MFYNAB
 
       def session
         @_session ||= MoneyForward::Session.new(
-          username: secrets["moneyforward_username"],
-          password: secrets["moneyforward_password"],
+          username: config.credentials["moneyforward_username"],
+          password: config.credentials["moneyforward_password"],
           logger: logger,
         )
-      end
-
-      def secrets
-        {
-          "ynab_access_token" => ENV.fetch("YNAB_ACCESS_TOKEN"),
-          "moneyforward_username" => ENV.fetch("MONEYFORWARD_USERNAME"),
-          "moneyforward_password" => ENV.fetch("MONEYFORWARD_PASSWORD"),
-        }
       end
 
       def config_file
