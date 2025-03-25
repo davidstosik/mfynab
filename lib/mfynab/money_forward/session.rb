@@ -75,7 +75,11 @@ module MFYNAB
         end
 
         def with_ferrum
-          browser = Ferrum::Browser.new(timeout: 30, headless: !ENV.key?("NO_HEADLESS"))
+          browser = Ferrum::Browser.new(
+            timeout: 30,
+            process_timeout: 20, # 10s was not always enough on CI (FIXME: make configurable per env)
+            headless: !ENV.key?("NO_HEADLESS"),
+          )
           user_agent = browser.default_user_agent.sub("HeadlessChrome", "Chrome")
           browser.headers.add({
             "Accept-Language" => "en-US,en",
