@@ -1,18 +1,15 @@
 # CHANGELOG.md
 
-**FIXME:**
-- git SHA links are broken
-- SHAs in _unreleased_ sometimes link to an outdated commit
-- should I just remove SHA links completely?
-
 ## (unreleased)
 
+## 0.2.0 (2025-03-25)
+
 - Refresh accounts on Money Forward before syncing transactions to YNAB.
-  ([TBD]())
+  ([6d0a5e4](6d0a5e4288d0b45424485e2396e6399637a14eef))
 - (Fix) Handle scenario where multiple YNAB accounts may match the partial string passed in the config file.
-  ([TBD]())
+  ([3a34c29](3a34c29682228e9b080e2db25ffb48b1a92e8ee2))
 - Increase memo and payee max lengths, following changes in YNAB's API
-  ([TBD]())
+  ([cc0ffcf](cc0ffcf3879efaa748ee31af9c35cb49d94a47c8))
 
 ## 0.1.4 (2024-08-25)
 
