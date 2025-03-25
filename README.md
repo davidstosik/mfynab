@@ -91,6 +91,7 @@ Previous notes:
 
 ### Later
 
+- Improve CHANGELOG. Not sure exactly what to do, but the current process with SHA links feels a bit tedious.
 - Use Thor to manage the CLI. (And/or TTY?)
 - Implement `Transaction` model to extract some logic from existing classes.
 - Handle the Amazon account differently (use account name as payee instead of content?)
