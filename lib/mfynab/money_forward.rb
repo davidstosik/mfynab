@@ -32,6 +32,19 @@ module MFYNAB
       update_accounts(account_names, update_invalid: false)
     end
 
+    def fetch_data(months)
+      Dir.mktmpdir("mfynab") do |save_path|
+        download_csv(
+          path: save_path,
+          months: months,
+        )
+
+        MoneyForwardData.new(logger: logger).tap do |data|
+          data.read_all_csv(save_path)
+        end
+      end
+    end
+
     def download_csv(path:, months:)
       month = Date.today
       month -= month.day - 1 # First day of month

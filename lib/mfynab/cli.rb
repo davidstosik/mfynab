@@ -19,20 +19,9 @@ module MFYNAB
 
     def start
       logger.info("Running...")
-
       money_forward.update_accounts(money_forward_account_names)
-
-      Dir.mktmpdir("mfynab") do |save_path|
-        money_forward.download_csv(
-          path: save_path,
-          months: config.months_to_sync,
-        )
-
-        data = MoneyForwardData.new(logger: logger)
-        data.read_all_csv(save_path)
-        ynab_transaction_importer.run(data.to_h)
-      end
-
+      data = money_forward.fetch_data(config.months_to_sync)
+      ynab_transaction_importer.run(data.to_h)
       logger.info("Done!")
     end
 
