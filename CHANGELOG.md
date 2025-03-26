@@ -2,10 +2,14 @@
 
 ## (unreleased)
 
+## 0.3.0 (2025-03-26)
+
 - Credentials can now be stored in the config file.
   (This change is backwards compatible.)
+  ([eda0358](eda03587c39bfbe55d3b83a5d7dce21a61a38d2c))
 - The configuration YAML file does not need a top-level key anymore.
   (This change is backwards compatible.)
+  ([f03bf24](f03bf24303cd9c89f1147a0071474067f9b0afa8))
 
 ## 0.2.0 (2025-03-25)
 
