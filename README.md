@@ -26,13 +26,32 @@ gem install mfynab
 wget https://raw.githubusercontent.com/davidstosik/moneyforward_ynab/main/config/example.yml -O mfynab-david.yml
 ```
 
-The script currently looks for credentials in environment variables:
+Credentials can be set in your config file directly:
 
-- `MONEYFORWARD_USERNAME`
-- `MONEYFORWARD_PASSWORD`
-- `YNAB_ACCESS_TOKEN`
+```yml
+credentials:
+  ynab_access_token: "plain_text_access_token"
+  moneyforward_username: "david@example.com"
+  moneyforward_password: "plain_text_password"
+```
 
-You can for example use [dotenv](https://github.com/bkeepers/dotenv)
+It is also possible to have the config fetch secrets from environment variables (this is the default in the example config file):
+
+```yml
+credentials:
+  ynab_access_token:
+    type: "env"
+    value: "YNAB_ACCESS_TOKEN"
+  moneyforward_username:
+    type: "env"
+    value: "MONEYFORWARD_USERNAME"
+  moneyforward_password:
+    type: "env"
+    value: "MONEYFORWARD_PASSWORD"
+```
+
+If using environment variables, you can for example also use
+[dotenv](https://github.com/bkeepers/dotenv)
 to store your secrets in a `.env` file:
 
 ```
@@ -41,8 +60,8 @@ MONEYFORWARD_PASSWORD=Passw0rd!
 YNAB_ACCESS_TOKEN=abunchofcharacters
 ```
 
-Alternatively, you can also use something [1Password's CLI](https://developer.1password.com/docs/cli/)
-to avoid storing clear secrets:
+Alternatively, you can also use something like [1Password's CLI](https://developer.1password.com/docs/cli/)
+to completely avoid storing clear secrets:
 
 ```
 MONEYFORWARD_USERNAME=op://Private/Moneyforward/username
