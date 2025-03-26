@@ -79,6 +79,9 @@ module MFYNAB
             timeout: 30,
             process_timeout: 20, # 10s was not always enough on CI (FIXME: make configurable per env)
             headless: !ENV.key?("NO_HEADLESS"),
+            # FIXME: this was needed to be able to run Chromium headless
+            # within Docker as root, but I'd rather not rely on it.
+            browser_options: { "no-sandbox": nil },
           )
           user_agent = browser.default_user_agent.sub("HeadlessChrome", "Chrome")
           browser.headers.add({
