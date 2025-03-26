@@ -10,7 +10,7 @@ module MFYNAB
     class SessionTest < Minitest::Test
       include TestLoggers
 
-      def test_login_raises_if_wrong_credentials
+      def test_cookie_raises_if_wrong_credentials
         while_running_fake_money_forward_app do |host, port|
           session = Session.new(
             username: "david@example.com",
@@ -20,22 +20,22 @@ module MFYNAB
           )
 
           assert_raises(RuntimeError, "Login failed") do
-            session.login
+            session.cookie
           end
         end
       end
 
-      def test_login_happy_path
+      def test_cookie_happy_path
         while_running_fake_money_forward_app do |host, port|
           session_cookie = Session.new(
             username: "david@example.com",
             password: "Passw0rd!",
             logger: null_logger,
             base_url: "http://#{host}:#{port}",
-          ).login
+          ).cookie
 
-          assert_equal "_moneybook_session", session_cookie.name
-          assert_equal "dummy_session_id", session_cookie.value
+          assert_equal "_moneybook_session", session_cookie["name"]
+          assert_equal "dummy_session_id", session_cookie["value"]
         end
       end
 

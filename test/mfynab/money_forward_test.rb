@@ -34,8 +34,8 @@ module MFYNAB
       end
 
       Dir.mktmpdir do |tmpdir|
-        cookie = Ferrum::Cookies::Cookie.new("name" => "_moneybook_session", "value" => session_id)
-        session.stub(:login, cookie) do
+        cookie = { "name" => "_moneybook_session", "value" => session_id }
+        session.stub(:cookie, cookie) do
           money_forward.download_csv(
             path: tmpdir,
             months: 3,
